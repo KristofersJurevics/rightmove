@@ -6,6 +6,7 @@ from datetime import date
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -29,7 +30,7 @@ SEARCH_URLS = {
 }
 
 EMAIL_SENDER = "kristofers@almora.com"
-EMAIL_PASSWORD = "qywk wdhd sqhw rwjy"  # App password
+EMAIL_PASSWORD = os.environ.get("RIGHTMOVE_EMAIL_APP_PASSWORD", "")  # Set in environment, never commit secrets
 EMAIL_RECEIVER = "kristofers.jurevics15@gmail.com"
 
 DATA_FILE = "seen_listings.json"
@@ -123,6 +124,8 @@ def send_email(new_listings):
     msg.attach(MIMEText(html, "html"))
 
     context = ssl.create_default_context()
+    if not EMAIL_PASSWORD:
+        raise RuntimeError("Set RIGHTMOVE_EMAIL_APP_PASSWORD in the environment before sending emails")
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
